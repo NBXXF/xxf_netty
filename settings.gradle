@@ -1,0 +1,3 @@
+include ':netty'
+include ':app'
+rootProject.name = "XXFNetty"
