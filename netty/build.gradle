@@ -1,7 +1,11 @@
 plugins {
     id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
     id 'com.github.dcendents.android-maven'
+    id 'io.objectbox' // apply last
 }
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 30
@@ -30,6 +34,15 @@ android {
 }
 
 dependencies {
-    api 'com.google.code.gson:gson:2.8.6'
-    api files('libs/netty-all-4.1.50.Final.jar')
+    implementation files('libs/netty-all-4.1.50.Final.jar')
+    implementation files('libs/MobileIMSDKServer_META.jar')
+    implementation 'androidx.annotation:annotation:1.1.0'
+
+    compileOnly 'com.google.code.gson:gson:2.8.6'
+    compileOnly 'com.github.NBXXF.xxf_database:xxf_objectbox:1.0.7'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    compileOnly 'io.reactivex.rxjava3:rxjava:3.0.8'
+}
+repositories {
+    mavenCentral()
 }
