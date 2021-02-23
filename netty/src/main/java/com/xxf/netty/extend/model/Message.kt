@@ -1,5 +1,6 @@
 package com.xxf.netty.extend.model
 
+import android.text.TextUtils
 import com.xxf.database.xxf.objectbox.converter.MapPropertyConverter
 import com.xxf.database.xxf.objectbox.id.IdUtils
 import com.xxf.netty.extend.enums.MsgState
@@ -78,5 +79,15 @@ class Message : Protocal, Serializable {
                 ", typeu=" + typeu +
                 ", retryCount=" + retryCount +
                 '}'
+    }
+
+    /**
+     * fp 相等就行
+     */
+    override fun equals(other: Any?): Boolean {
+        if (!(other is Message)) {
+            return false;
+        }
+        return TextUtils.equals(fp, other.fp);
     }
 }
