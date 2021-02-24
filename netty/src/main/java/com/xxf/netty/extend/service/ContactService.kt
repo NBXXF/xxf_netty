@@ -25,7 +25,6 @@ object ContactService : NettyService {
      */
     fun insertContact(vararg contacts: Contact): Observable<List<Contact>> {
         return Observable.fromCallable<List<Contact>> {
-            val first = contacts.get(0);
             val toList = contacts.toList();
             getBox()
                     .boxFor(Contact::class.java)
@@ -68,14 +67,15 @@ object ContactService : NettyService {
      * @return
      */
     fun queryContact(id: String): Observable<Contact> {
-        return Observable.fromCallable<Contact> {
+        return Observable.defer<Contact> {
             val findFirst = getBox()
                     .boxFor(Contact::class.java)
                     .get(IdUtils.generateId(id));
             if (findFirst == null) {
                 Observable.empty<Contact>()
+            } else {
+                Observable.just(findFirst);
             }
-            findFirst;
         }.subscribeOn(Schedulers.io());
     }
 }
