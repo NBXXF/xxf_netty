@@ -55,6 +55,7 @@ public class Message extends Protocal {
         this.from = from;
         this.typeu = typeu;
         this.fp = fp;
+        this.to = to;
         this.timestamp = timestamp;
     }
 
