@@ -48,8 +48,14 @@ public class Message extends Protocal {
     private int typeu;
     private transient int retryCount;
 
-    public Message(int type, String dataContent, String from, String to, boolean QoS, String fingerPrint) {
-        super(type, dataContent, from, to, QoS, fingerPrint);
+    public Message(int type, String dataContent, String from, String to, String fp, int typeu, long timestamp) {
+        super(type, dataContent, from, to, false, fp, typeu);
+        this.type = type;
+        this.dataContent = dataContent;
+        this.from = from;
+        this.typeu = typeu;
+        this.fp = fp;
+        this.timestamp = timestamp;
     }
 
     public void set_id(long _id) {

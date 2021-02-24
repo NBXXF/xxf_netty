@@ -14,7 +14,7 @@ Step 2. Add the dependency
 
 	dependencies {
             //主lib
-	        implementation 'com.github.NBXXF:xxf_netty:1.0.2'
+	        implementation 'com.github.NBXXF:xxf_netty:1.0.5'
 	        implementation 'com.google.code.gson:gson:2.8.6'
 	        implementation 'io.reactivex.rxjava3:rxjava:3.0.8'
 	        implementation 'com.github.NBXXF.xxf_database:xxf_objectbox:1.0.7'

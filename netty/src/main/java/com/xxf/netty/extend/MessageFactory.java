@@ -33,13 +33,11 @@ public class MessageFactory {
                                            String fromAvatar,
                                            String to_user_id,
                                            int typeu) {
-        boolean QoS = false;
         String fingerPrint = Message.genFingerPrint();
         long timestamp = System.currentTimeMillis();
-        Message commonProtocal = new Message(ProtocalType.C.FROM_CLIENT_TYPE_OF_COMMON$DATA, dataContent, from_user_id, to_user_id, QoS, fingerPrint, typeu);
+        Message commonProtocal = new Message(ProtocalType.C.FROM_CLIENT_TYPE_OF_COMMON$DATA, dataContent, from_user_id, to_user_id, fingerPrint, typeu, timestamp);
         commonProtocal.setFromNickname(fromNickname);
         commonProtocal.setFromAvatar(fromAvatar);
-        commonProtocal.setTimestamp(timestamp);
         commonProtocal.setExtra(new HashMap<>());
         commonProtocal.setState(MsgState.sending);
         commonProtocal.setRead(true);
