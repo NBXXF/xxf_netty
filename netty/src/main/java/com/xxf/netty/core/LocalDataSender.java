@@ -19,11 +19,10 @@ package com.xxf.netty.core;
 import com.xxf.netty.ClientCoreSDK;
 import com.xxf.netty.utils.MBObserver;
 import com.xxf.netty.utils.TCPUtils;
-import net.x52im.mobileimsdk.server.protocal.ErrorCode;
-import net.x52im.mobileimsdk.server.protocal.Protocal;
-import net.x52im.mobileimsdk.server.protocal.ProtocalFactory;
+import com.xxf.netty.protocal.ErrorCode;
+import com.xxf.netty.protocal.Protocal;
+import com.xxf.netty.protocal.ProtocalFactory;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 

@@ -1,10 +1,10 @@
 package com.xxf.netty.extend;
 
 
-import com.xxf.netty.extend.model.Message;
 import com.xxf.netty.extend.enums.MsgState;
 
-import net.x52im.mobileimsdk.server.protocal.ProtocalType;
+import com.xxf.netty.protocal.Protocal;
+import com.xxf.netty.protocal.ProtocalType;
 
 import java.util.HashMap;
 
@@ -27,15 +27,22 @@ public class MessageFactory {
      * @param typeu        业务类型类型 1文本 2图片，3视频
      * @return
      */
-    public static Message createCommonData(String dataContent,
-                                           String from_user_id,
-                                           String fromNickname,
-                                           String fromAvatar,
-                                           String to_user_id,
-                                           int typeu) {
-        String fingerPrint = Message.genFingerPrint();
+    public static Protocal createCommonData(String dataContent,
+                                            String from_user_id,
+                                            String fromNickname,
+                                            String fromAvatar,
+                                            String to_user_id,
+                                            int typeu) {
+        String fingerPrint = Protocal.genFingerPrint();
         long timestamp = System.currentTimeMillis();
-        Message commonProtocal = new Message(ProtocalType.C.FROM_CLIENT_TYPE_OF_COMMON$DATA, dataContent, from_user_id, to_user_id, fingerPrint, typeu, timestamp);
+        Protocal commonProtocal = new Protocal(ProtocalType.C.FROM_CLIENT_TYPE_OF_COMMON$DATA,
+                dataContent,
+                from_user_id,
+                to_user_id,
+                false,
+                fingerPrint,
+                typeu);
+        commonProtocal.setTimestamp(timestamp);
         commonProtocal.setFromNickname(fromNickname);
         commonProtocal.setFromAvatar(fromAvatar);
         commonProtocal.setExtra(new HashMap<>());

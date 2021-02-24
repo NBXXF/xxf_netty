@@ -2,6 +2,7 @@ package com.xxf.netty.extend.service
 
 import android.text.TextUtils
 import com.xxf.database.xxf.objectbox.ObjectBoxFactory
+import com.xxf.netty.MyObjectBox
 import com.xxf.netty.core.LocalDataSender
 import com.xxf.netty.extend.enums.MsgDirection
 import com.xxf.netty.extend.enums.MsgState
@@ -13,7 +14,9 @@ import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.schedulers.Schedulers
-import net.x52im.mobileimsdk.server.protocal.ErrorCode
+import com.xxf.netty.protocal.ErrorCode
+import com.xxf.netty.protocal.Protocal
+import com.xxf.netty.protocal.Protocal_
 
 /**
  * @Author: XGod  xuanyouwu@163.com  17611639080
@@ -37,7 +40,7 @@ object MessageService : NettyService {
      *
      * @param message [Message]
      */
-    fun sendMessage(message: Message): Observable<Message> {
+    fun sendMessage(message: Protocal): Observable<Protocal> {
         return insertMessage(message)
                 .doOnSubscribe {
                     message.state = MsgState.sending;
@@ -63,7 +66,7 @@ object MessageService : NettyService {
      *
      * @param message
      */
-    fun updateMessage(message: Message): Observable<Message> {
+    fun updateMessage(message: Protocal): Observable<Protocal> {
         return insertMessage(message)
                 .map { it.get(0) }
     }
@@ -73,13 +76,13 @@ object MessageService : NettyService {
      *
      * @param messages
      */
-    fun insertMessage(vararg messages: Message): @NonNull Observable<List<Message>> {
+    fun insertMessage(vararg messages: Protocal): @NonNull Observable<List<Protocal>> {
         return Observable
-                .fromCallable<List<Message>> {
+                .fromCallable<List<Protocal>> {
                     val first = messages.get(0);
                     val toList = messages.toList();
                     getBox(first.from, first.to)
-                            .boxFor(Message::class.java)
+                            .boxFor(Protocal::class.java)
                             .put(toList);
                     toList;
                 }
@@ -95,14 +98,14 @@ object MessageService : NettyService {
     /**
      * 获取消息方向
      */
-    fun getMessageDirection(message: Message): MsgDirection {
+    fun getMessageDirection(message: Protocal): MsgDirection {
         return if (TextUtils.equals(message.from, MessageService.getLoginUserId())) MsgDirection.OUT else MsgDirection.IN;
     }
 
     /**
      * 获取对方的id 相对于登陆者
      */
-    fun getTargetContactId(message: Message): String {
+    fun getTargetContactId(message: Protocal): String {
         if (getMessageDirection(message) == MsgDirection.IN) {
             return message.from;
         } else {
@@ -113,9 +116,7 @@ object MessageService : NettyService {
     /**
      * 更新session快照
      */
-    private fun updateSession(message: Message): Observable<Session> {
-        val target: Message = message.clone() as Message;
-        target.timestamp = System.currentTimeMillis();
+    private fun updateSession(message: Protocal): Observable<Session> {
         return Observable.zip(
                 ContactService.queryContact(getTargetContactId(message))
                         .switchIfEmpty {
@@ -135,7 +136,7 @@ object MessageService : NettyService {
                         .map {
                             it.get(0)
                         },
-                BiFunction<Contact, Message, Session> { t1, t2 ->
+                BiFunction<Contact, Protocal, Session> { t1, t2 ->
                     val session = Session()
                     session.target = t1;
                     session.message = t2;
@@ -152,10 +153,10 @@ object MessageService : NettyService {
      *
      * @param message
      */
-    fun deleteMessage(message: Message): Observable<Boolean> {
+    fun deleteMessage(message: Protocal): Observable<Boolean> {
         return Observable.fromCallable<Boolean> {
             getBox(message.from, message.to)
-                    .boxFor(Message::class.java)
+                    .boxFor(Protocal::class.java)
                     .remove(message);
         }.subscribeOn(Schedulers.io());
     }
@@ -166,13 +167,13 @@ object MessageService : NettyService {
      * @param
      * @return
      */
-    fun queryMessage(contactId: String, startTime: Long, limit: Long): Observable<List<Message>> {
-        return Observable.fromCallable<List<Message>> {
+    fun queryMessage(contactId: String, startTime: Long, limit: Long): Observable<List<Protocal>> {
+        return Observable.fromCallable<List<Protocal>> {
             getBox(getLoginUserId(), contactId)
-                    .boxFor(Message::class.java)
+                    .boxFor(Protocal::class.java)
                     .query()
-                    .lessOrEqual(Message_.timestamp, startTime)
-                    .orderDesc(Message_.timestamp)
+                    .lessOrEqual(Protocal_.timestamp, startTime)
+                    .orderDesc(Protocal_.timestamp)
                     .build()
                     .find(0, limit)
         }.subscribeOn(Schedulers.io());
@@ -181,12 +182,12 @@ object MessageService : NettyService {
     /**
      * 查询未读消息数量
      */
-    fun queryUnReadNum(target: Message): Observable<Long> {
+    fun queryUnReadNum(target: Protocal): Observable<Long> {
         return Observable.fromCallable<Long> {
             getBox(target.from, target.to)
-                    .boxFor(Message::class.java)
+                    .boxFor(Protocal::class.java)
                     .query()
-                    .equal(Message_.isRead, false)
+                    .equal(Protocal_.isRead, false)
                     .build()
                     .count();
         }.subscribeOn(Schedulers.io());
@@ -196,12 +197,12 @@ object MessageService : NettyService {
      * 清除所有未读消息
      */
     @Internal
-    internal fun clearUnreadCount(target: Message): Observable<Boolean> {
+    internal fun clearUnreadCount(target: Protocal): Observable<Boolean> {
         return Observable.fromCallable<Boolean> {
             val find = getBox(target.from, target.to)
-                    .boxFor(Message::class.java)
+                    .boxFor(Protocal::class.java)
                     .query()
-                    .equal(Message_.isRead, false)
+                    .equal(Protocal_.isRead, false)
                     .build()
                     .find()
             if (find != null) {
@@ -209,7 +210,7 @@ object MessageService : NettyService {
                     it.isRead = true;
                 }
                 getBox(target.from, target.to)
-                        .boxFor(Message::class.java)
+                        .boxFor(Protocal::class.java)
                         .put(find);
             }
             true;

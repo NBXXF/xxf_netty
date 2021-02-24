@@ -3,6 +3,7 @@ package com.xxf.netty.extend.model
 import com.xxf.database.xxf.objectbox.converter.BeanPropertyConverter
 import com.xxf.database.xxf.objectbox.converter.MapPropertyConverter
 import com.xxf.database.xxf.objectbox.id.IdUtils
+import com.xxf.netty.protocal.Protocal
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -40,7 +41,7 @@ class Session : Serializable {
      * 最后一条消息  可空
      */
     @Convert(converter = MessagePropertyConverter::class, dbType = String::class)
-    var message: Message? = null
+    var message: Protocal? = null
 
     /**
      * 扩展使用
@@ -63,6 +64,6 @@ class Session : Serializable {
     internal class ContactPropertyConverter : BeanPropertyConverter<Contact>() {
     }
 
-    internal class MessagePropertyConverter : BeanPropertyConverter<Message>() {
+    internal class MessagePropertyConverter : BeanPropertyConverter<Protocal>() {
     }
 }

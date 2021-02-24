@@ -16,12 +16,11 @@
  */
 package com.xxf.netty.core;
 
-import java.util.ArrayList;
 import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.xxf.netty.ClientCoreSDK;
-import net.x52im.mobileimsdk.server.protocal.Protocal;
+import com.xxf.netty.protocal.Protocal;
 
 import android.os.Handler;
 import android.util.Log;

@@ -18,7 +18,7 @@ package com.xxf.netty.event;
 
 import java.util.ArrayList;
 
-import net.x52im.mobileimsdk.server.protocal.Protocal;
+import com.xxf.netty.protocal.Protocal;
 
 public interface MessageQoSEvent {
 	void messagesLost(ArrayList<Protocal> lostMessages);

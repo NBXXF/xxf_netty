@@ -21,17 +21,16 @@ import java.util.Observer;
 
 import com.xxf.netty.ClientCoreSDK;
 
-import net.x52im.mobileimsdk.server.protocal.CharsetHelper;
-import net.x52im.mobileimsdk.server.protocal.ErrorCode;
-import net.x52im.mobileimsdk.server.protocal.Protocal;
-import net.x52im.mobileimsdk.server.protocal.ProtocalFactory;
-import net.x52im.mobileimsdk.server.protocal.ProtocalType;
-import net.x52im.mobileimsdk.server.protocal.s.PErrorResponse;
-import net.x52im.mobileimsdk.server.protocal.s.PLoginInfoResponse;
+import com.xxf.netty.protocal.CharsetHelper;
+import com.xxf.netty.protocal.ErrorCode;
+import com.xxf.netty.protocal.Protocal;
+import com.xxf.netty.protocal.ProtocalFactory;
+import com.xxf.netty.protocal.ProtocalType;
+import com.xxf.netty.protocal.s.PErrorResponse;
+import com.xxf.netty.protocal.s.PLoginInfoResponse;
 
 import android.util.Log;
 
-import com.xxf.netty.extend.model.Message;
 import com.xxf.netty.extend.service.MessageService;
 import com.xxf.netty.utils.MBThreadPoolExecutor;
 
@@ -100,12 +99,7 @@ public class LocalDataReciever {
 
             switch (pFromServer.getType()) {
                 case ProtocalType.C.FROM_CLIENT_TYPE_OF_COMMON$DATA: {
-                    /**
-                     * update by xyw
-                     */
-                    Message message = ProtocalFactory.parse(CharsetHelper.getString(fullProtocalOfBody, fullProtocalOfBody.length), Message.class);
-//                    onRecievedCommonData(pFromServer);
-                    onRecievedCommonData(message);
+                    onRecievedCommonData(pFromServer);
                     break;
                 }
                 case ProtocalType.S.FROM_SERVER_TYPE_OF_RESPONSE$KEEP$ALIVE: {
@@ -134,8 +128,7 @@ public class LocalDataReciever {
         }
     }
 
-    protected void onRecievedCommonData(Message pFromServer) {
-        MessageService.INSTANCE.insertMessage(pFromServer).subscribe();
+    protected void onRecievedCommonData(Protocal pFromServer) {
 //		Log.d(TAG, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>收到"+pFromServer.getFrom()+"发过来的消息："+pFromServer.getDataContent()+".["+pFromServer.getTo()+"]");
         // 收到通用数据的回调
         if (ClientCoreSDK.getInstance().getChatMessageEvent() != null) {

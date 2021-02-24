@@ -16,10 +16,10 @@
  */
 package com.xxf.netty.event;
 
-import com.xxf.netty.extend.model.Message;
+import com.xxf.netty.protocal.Protocal;
 
 public interface ChatMessageEvent {
-    void onRecieveMessage(Message message);
+    void onRecieveMessage(Protocal message);
 
     void onErrorResponse(int errorCode, String errorMsg);
 }

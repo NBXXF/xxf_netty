@@ -2,8 +2,8 @@ package com.xxf.netty.extend.service
 
 import com.xxf.database.xxf.objectbox.ObjectBoxFactory
 import com.xxf.database.xxf.objectbox.id.IdUtils
+import com.xxf.netty.MyObjectBox
 import com.xxf.netty.extend.model.Contact
-import com.xxf.netty.extend.model.MyObjectBox
 import io.objectbox.BoxStore
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers

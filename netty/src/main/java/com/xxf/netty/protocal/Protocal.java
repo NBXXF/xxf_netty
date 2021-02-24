@@ -1,27 +1,36 @@
-package com.xxf.netty.extend.model;
+/*
+ * Copyright (C) 2020  即时通讯网(52im.net) & Jack Jiang.
+ * The MobileIMSDK v5.x Project.
+ * All rights reserved.
+ *
+ * > Github地址：https://github.com/JackJiang2011/MobileIMSDK
+ * > 文档地址：  http://www.52im.net/forum-89-1.html
+ * > 技术社区：  http://www.52im.net/
+ * > 技术交流群：320837163 (http://www.52im.net/topic-qqgroup.html)
+ * > 作者公众号：“【即时通讯技术圈】”，欢迎关注！
+ * > 联系作者：  http://www.52im.net/thread-2792-1-1.html
+ *
+ * "即时通讯网(52im.net) - 即时通讯开发者社区!" 推荐开源工程。
+ *
+ * Protocal.java at 2020-8-22 16:00:59, code by Jack Jiang.
+ */
+package com.xxf.netty.protocal;
+
+import java.util.Map;
+import java.util.UUID;
 
 import com.google.gson.Gson;
 import com.xxf.database.xxf.objectbox.converter.MapPropertyConverter;
 import com.xxf.database.xxf.objectbox.id.IdUtils;
 import com.xxf.netty.extend.enums.MsgState;
 
-import net.x52im.mobileimsdk.server.protocal.Protocal;
-
-import java.util.Map;
-
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.converter.PropertyConverter;
 
-/**
- * @Author: XGod  xuanyouwu@163.com  17611639080
- * Date: 2/22/21 10:39 AM
- * Description: 自定义消息体 http://gitlab.channelthree.net/channel3/channel3-doc/-/wikis/im-api-doc
- * 需要显示声明父类的属性 否则ob 注解不会生成对应的字段,存储不进数据库
- */
 @Entity
-public class Message extends Protocal {
+public class Protocal {
     @Id(assignable = true)
     private long _id;
     private long timestamp;
@@ -33,30 +42,48 @@ public class Message extends Protocal {
     private Map<String, Object> extra;
     private boolean isRead;
 
+
     /**
      * -----------------------------------
-     * Protocal 本身自带属性如下 必须显示声明一边
+     * Protocal 本身自带属性如下
      * -----------------------------------
      */
-    private boolean bridge;
-    private int type;
-    private String dataContent;
-    private String from;
-    private String to;
-    private String fp;
-    private boolean QoS;
-    private int typeu;
-    private transient int retryCount;
+    protected boolean bridge = false;
+    protected int type = 0;
+    protected String dataContent = null;
+    protected String from = "-1";
+    protected String to = "-1";
+    protected String fp = null;
+    protected boolean QoS = false;
+    protected int typeu = -1;
+    protected transient int retryCount = 0;
 
-    public Message(int type, String dataContent, String from, String to, String fp, int typeu, long timestamp) {
-        super(type, dataContent, from, to, false, fp, typeu);
+    public Protocal(int type, String dataContent, String from, String to) {
+        this(type, dataContent, from, to, -1);
+    }
+
+    public Protocal(int type, String dataContent, String from, String to, int typeu) {
+        this(type, dataContent, from, to, false, null, typeu);
+    }
+
+    public Protocal(int type, String dataContent, String from, String to
+            , boolean QoS, String fingerPrint) {
+        this(type, dataContent, from, to, QoS, fingerPrint, -1);
+    }
+
+    public Protocal(int type, String dataContent, String from, String to
+            , boolean QoS, String fingerPrint, int typeu) {
         this.type = type;
         this.dataContent = dataContent;
         this.from = from;
-        this.typeu = typeu;
-        this.fp = fp;
         this.to = to;
-        this.timestamp = timestamp;
+        this.QoS = QoS;
+        this.typeu = typeu;
+
+        if (QoS && fingerPrint == null)
+            fp = Protocal.genFingerPrint();
+        else
+            fp = fingerPrint;
     }
 
     public void set_id(long _id) {
@@ -65,13 +92,6 @@ public class Message extends Protocal {
 
     public long get_id() {
         return IdUtils.generateId(fp);
-    }
-
-
-    @Override
-    public Object clone() {
-        Gson gson = new Gson();
-        return gson.fromJson(gson.toJson(this), Message.class);
     }
 
     public long getTimestamp() {
@@ -122,114 +142,95 @@ public class Message extends Protocal {
         isRead = read;
     }
 
-    @Override
-    public boolean isBridge() {
-        return bridge;
-    }
-
-    @Override
-    public void setBridge(boolean bridge) {
-        this.bridge = bridge;
-    }
-
-    @Override
     public int getType() {
-        return type;
+        return this.type;
     }
 
-    @Override
     public void setType(int type) {
         this.type = type;
     }
 
-    @Override
     public String getDataContent() {
-        return dataContent;
+        return this.dataContent;
     }
 
-    @Override
     public void setDataContent(String dataContent) {
         this.dataContent = dataContent;
     }
 
-    @Override
     public String getFrom() {
-        return from;
+        return this.from;
     }
 
-    @Override
     public void setFrom(String from) {
         this.from = from;
     }
 
-    @Override
     public String getTo() {
-        return to;
+        return this.to;
     }
 
-    @Override
     public void setTo(String to) {
         this.to = to;
     }
 
-    @Override
     public String getFp() {
-        return fp;
+        return this.fp;
     }
 
-    public void setFp(String fp) {
-        this.fp = fp;
+    public int getRetryCount() {
+        return this.retryCount;
     }
 
-    @Override
+    public void increaseRetryCount() {
+        this.retryCount += 1;
+    }
+
     public boolean isQoS() {
         return QoS;
     }
 
-    @Override
     public void setQoS(boolean qoS) {
-        QoS = qoS;
+        this.QoS = qoS;
     }
 
-    @Override
+    public boolean isBridge() {
+        return bridge;
+    }
+
+    public void setBridge(boolean bridge) {
+        this.bridge = bridge;
+    }
+
     public int getTypeu() {
         return typeu;
     }
 
-    @Override
     public void setTypeu(int typeu) {
         this.typeu = typeu;
     }
 
-    @Override
-    public int getRetryCount() {
-        return retryCount;
+    public String toGsonString() {
+        return new Gson().toJson(this);
     }
 
-    public void setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
+    public byte[] toBytes() {
+        return CharsetHelper.getBytes(toGsonString());
     }
 
     @Override
-    public String toString() {
-        return "Message2{" +
-                "_id=" + _id +
-                ", timestamp=" + timestamp +
-                ", fromNickname='" + fromNickname + '\'' +
-                ", fromAvatar='" + fromAvatar + '\'' +
-                ", state=" + state +
-                ", extra=" + extra +
-                ", isRead=" + isRead +
-                ", bridge=" + bridge +
-                ", type=" + type +
-                ", dataContent='" + dataContent + '\'' +
-                ", from='" + from + '\'' +
-                ", to='" + to + '\'' +
-                ", fp='" + fp + '\'' +
-                ", QoS=" + QoS +
-                ", typeu=" + typeu +
-                ", retryCount=" + retryCount +
-                '}';
+    public Object clone() {
+      /*  Protocal cloneP = new Protocal(this.getType()
+                , this.getDataContent(), this.getFrom(), this.getTo(), this.isQoS(), this.getFp());
+        cloneP.setBridge(this.bridge); // since 3.0
+        cloneP.setTypeu(this.typeu);   // since 3.0
+        return cloneP;*/
+        Gson gson = new Gson();
+        return gson.fromJson(gson.toJson(this),Protocal.class);
+    }
+
+    public static String genFingerPrint() {
+        return UUID.randomUUID().toString();
     }
 
     static class MsgStatePropertyConverter implements PropertyConverter<MsgState, Integer> {
