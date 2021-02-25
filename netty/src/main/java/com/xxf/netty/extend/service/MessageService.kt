@@ -25,12 +25,8 @@ import com.xxf.netty.protocal.Protocal_
  */
 object MessageService : NettyService {
 
-    private fun getBox(from: String, to: String): BoxStore {
-        return if (TextUtils.equals(from, getLoginUserId())) {
-            ObjectBoxFactory.getBoxStore(getApplication(), MyObjectBox.builder(), "chat_msg_${from}_${to}")
-        } else {
-            ObjectBoxFactory.getBoxStore(getApplication(), MyObjectBox.builder(), "chat_msg_${to}_${from}")
-        }
+    private fun getBox(sessionId: Long): BoxStore {
+        return ObjectBoxFactory.getBoxStore(getApplication(), MyObjectBox.builder(), "chat_msg_${sessionId}")
     }
 
     /**
@@ -81,7 +77,7 @@ object MessageService : NettyService {
                 .fromCallable<List<Protocal>> {
                     val first = messages.get(0);
                     val toList = messages.toList();
-                    getBox(first.from, first.to)
+                    getBox(first.sessionId)
                             .boxFor(Protocal::class.java)
                             .put(toList);
                     toList;
@@ -105,7 +101,7 @@ object MessageService : NettyService {
     /**
      * 获取对方的id 相对于登陆者
      */
-    fun getTargetContactId(message: Protocal): String {
+    private fun getTargetContactId(message: Protocal): String {
         if (getMessageDirection(message) == MsgDirection.IN) {
             return message.from;
         } else {
@@ -117,29 +113,25 @@ object MessageService : NettyService {
      * 更新session快照
      */
     private fun updateSession(message: Protocal): Observable<Session> {
+        val contact = Contact();
+        contact.id = message.from;
+        contact.name = message.fromNickname;
+        contact.avatar = message.fromAvatar;
         return Observable.zip(
-                ContactService.queryContact(getTargetContactId(message))
-                        .switchIfEmpty {
-                            /**
-                             * 第一次本地没有联系人
-                             */
-                            val contact = Contact();
-                            contact.id = message.from;
-                            contact.name = message.fromNickname;
-                            contact.avatar = message.fromAvatar;
-                            ContactService.insertContact(contact)
+                ContactService.insertContact(contact)
+                        .flatMap {
+                            ContactService.queryContact(getTargetContactId(message))
                         },
                 /**
                  * 获取最后一条消息
                  */
-                queryMessage(getTargetContactId(message), System.currentTimeMillis(), 1)
+                queryMessage(message.sessionId, System.currentTimeMillis(), 1)
                         .map {
                             it.get(0)
                         },
                 BiFunction<Contact, Protocal, Session> { t1, t2 ->
-                    val session = Session()
+                    val session = Session(message)
                     session.target = t1;
-                    session.message = t2;
                     session.timestamp = t2.timestamp;
                     session;
                 })
@@ -155,7 +147,7 @@ object MessageService : NettyService {
      */
     fun deleteMessage(message: Protocal): Observable<Boolean> {
         return Observable.fromCallable<Boolean> {
-            getBox(message.from, message.to)
+            getBox(message.sessionId)
                     .boxFor(Protocal::class.java)
                     .remove(message);
         }.subscribeOn(Schedulers.io());
@@ -167,9 +159,9 @@ object MessageService : NettyService {
      * @param
      * @return
      */
-    fun queryMessage(contactId: String, startTime: Long, limit: Long): Observable<List<Protocal>> {
+    fun queryMessage(sessionId: Long, startTime: Long, limit: Long): Observable<List<Protocal>> {
         return Observable.fromCallable<List<Protocal>> {
-            getBox(getLoginUserId(), contactId)
+            getBox(sessionId)
                     .boxFor(Protocal::class.java)
                     .query()
                     .lessOrEqual(Protocal_.timestamp, startTime)
@@ -184,7 +176,7 @@ object MessageService : NettyService {
      */
     fun queryUnReadNum(target: Protocal): Observable<Long> {
         return Observable.fromCallable<Long> {
-            getBox(target.from, target.to)
+            getBox(target.sessionId)
                     .boxFor(Protocal::class.java)
                     .query()
                     .equal(Protocal_.isRead, false)
@@ -199,7 +191,7 @@ object MessageService : NettyService {
     @Internal
     internal fun clearUnreadCount(target: Protocal): Observable<Boolean> {
         return Observable.fromCallable<Boolean> {
-            val find = getBox(target.from, target.to)
+            val find = getBox(target.sessionId)
                     .boxFor(Protocal::class.java)
                     .query()
                     .equal(Protocal_.isRead, false)
@@ -209,7 +201,7 @@ object MessageService : NettyService {
                 find.forEach {
                     it.isRead = true;
                 }
-                getBox(target.from, target.to)
+                getBox(target.sessionId)
                         .boxFor(Protocal::class.java)
                         .put(find);
             }

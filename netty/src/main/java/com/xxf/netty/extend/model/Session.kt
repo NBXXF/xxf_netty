@@ -19,7 +19,12 @@ class Session : Serializable {
 
     @Id(assignable = true)
     var _id: Long = 0
-        get() = IdUtils.generateId(target!!.id);
+        get() = IdUtils.generateId(sessionId);
+
+    /**
+     * 会话ID
+     */
+    var sessionId: String = "";
 
     /**
      * 未读数量
@@ -32,7 +37,7 @@ class Session : Serializable {
     var timestamp: Long = 0
 
     /**
-     * 对方 或者群
+     * 对方 或者群  相对于登陆者
      */
     @Convert(converter = ContactPropertyConverter::class, dbType = String::class)
     var target: Contact? = null
@@ -48,6 +53,16 @@ class Session : Serializable {
      */
     @Convert(converter = MapPropertyConverter::class, dbType = String::class)
     var extra: Map<String, Any>? = null
+
+
+    constructor(from: String, to: String) {
+        this.sessionId = Protocal.genSessionIdString(from, to);
+    }
+
+    constructor(message: Protocal) {
+        this.message = message
+        this.sessionId = Protocal.genSessionIdString(message.from, message.to);
+    }
 
 
     override fun toString(): String {

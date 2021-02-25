@@ -226,11 +226,48 @@ public class Protocal {
         cloneP.setTypeu(this.typeu);   // since 3.0
         return cloneP;*/
         Gson gson = new Gson();
-        return gson.fromJson(gson.toJson(this),Protocal.class);
+        return gson.fromJson(gson.toJson(this), Protocal.class);
+    }
+
+    /**
+     * 获取sessionId
+     *
+     * @return
+     */
+    public long getSessionId() {
+        return genSessionId(this.from, this.to);
     }
 
     public static String genFingerPrint() {
         return UUID.randomUUID().toString();
+    }
+
+    /**
+     * 生成 唯一sessionId 无论 ab 正反顺序
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static long genSessionId(String a, String b) {
+        return IdUtils.generateId(genSessionIdString(a, b));
+    }
+
+    /**
+     * 生成 唯一session 标识 无论 ab 正反顺序
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static String genSessionIdString(String a, String b) {
+        long aId = IdUtils.generateId(a);
+        long bId = IdUtils.generateId(b);
+        if (aId >= bId) {
+            return (a + b);
+        } else {
+            return (b + a);
+        }
     }
 
     static class MsgStatePropertyConverter implements PropertyConverter<MsgState, Integer> {
